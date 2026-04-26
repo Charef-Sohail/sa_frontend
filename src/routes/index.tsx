@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import {
@@ -12,9 +13,11 @@ import {
   Phone,
   MapPin,
   Check,
+  Play,
 } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { VideoModal } from "@/components/site/VideoModal";
 import { useI18n } from "@/contexts/AppProviders";
 
 export const Route = createFileRoute("/")({
@@ -22,11 +25,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [videoOpen, setVideoOpen] = React.useState(false);
   return (
     <div className="min-h-screen bg-surface text-foreground">
       <Navbar />
       <main>
-        <Hero />
+        <Hero onOpenVideo={() => setVideoOpen(true)} />
         <LogosBar />
         <Features />
         <HowItWorks />
@@ -35,11 +39,12 @@ function Index() {
         <Contact />
       </main>
       <Footer />
+      <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
   );
 }
 
-function Hero() {
+function Hero({ onOpenVideo }: { onOpenVideo: () => void }) {
   const { t } = useI18n();
   return (
     <section
@@ -73,12 +78,13 @@ function Hero() {
             >
               {t("hero.cta.primary")} <ArrowRight size={16} />
             </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center rounded-lg border-2 border-brand px-8 py-3.5 text-[15px] font-semibold text-brand transition-colors hover:bg-brand-light"
+            <button
+              type="button"
+              onClick={onOpenVideo}
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-brand px-8 py-3.5 text-[15px] font-semibold text-brand transition-colors hover:bg-brand-light"
             >
-              {t("hero.cta.secondary")}
-            </Link>
+              <Play size={16} /> {t("hero.cta.secondary")}
+            </button>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-7">
             <Stat value="2 500+" label={t("hero.stat.students")} color="var(--brand)" />

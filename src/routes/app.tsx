@@ -15,6 +15,7 @@ export const Route = createFileRoute("/app")({
 function AppPage() {
   const [page, setPage] = React.useState<SubPage>("overview");
   const [showSurvey, setShowSurvey] = React.useState(false);
+  const [openCreateTask, setOpenCreateTask] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -22,12 +23,19 @@ function AppPage() {
     if (!completed) setShowSurvey(true);
   }, []);
 
+  function triggerNewTask() {
+    setOpenCreateTask(true);
+    setPage("tasks");
+  }
+
   return (
     <>
       <AppShell page={page} onPageChange={setPage}>
-        {page === "overview" && <Overview go={setPage} />}
+        {page === "overview" && <Overview go={setPage} onNewTask={triggerNewTask} />}
         {page === "planning" && <Planning />}
-        {page === "tasks" && <Tasks />}
+        {page === "tasks" && (
+          <Tasks openCreateOnMount={openCreateTask} onConsumed={() => setOpenCreateTask(false)} />
+        )}
         {page === "markets" && <Markets />}
         {page === "faq" && <Faq />}
       </AppShell>

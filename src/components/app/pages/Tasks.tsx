@@ -49,7 +49,7 @@ function saveTasks(list: TaskResponse[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
-export function Tasks() {
+export function Tasks({ openCreateOnMount = false, onConsumed }: { openCreateOnMount?: boolean; onConsumed?: () => void } = {}) {
   const { t } = useI18n();
   const [tasks, setTasks] = React.useState<TaskResponse[]>([]);
   const [filter, setFilter] = React.useState<"all" | Status>("all");
@@ -59,6 +59,15 @@ export function Tasks() {
   React.useEffect(() => {
     setTasks(loadTasks());
   }, []);
+
+  React.useEffect(() => {
+    if (openCreateOnMount) {
+      setEditing(null);
+      setDialogOpen(true);
+      onConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openCreateOnMount]);
 
   const counts = React.useMemo(
     () => ({

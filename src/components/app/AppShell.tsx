@@ -52,7 +52,7 @@ export function AppShell({
             >
               {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
-            <Logo size={32} />
+            <Logo size={32} asLink />
           </div>
 
           <div className="hidden flex-1 px-4 md:block md:max-w-[400px]">

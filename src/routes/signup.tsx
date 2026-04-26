@@ -1,7 +1,9 @@
+import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useI18n } from "@/contexts/AppProviders";
 import { AuthLayout, AuthInput, GoogleButton } from "@/components/site/AuthLayout";
+import { GraduationCap, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
@@ -10,15 +12,21 @@ export const Route = createFileRoute("/signup")({
 function SignupPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const [role, setRole] = React.useState<"STUDENT" | "ADMIN">("STUDENT");
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Mark first-time so survey opens on /app
     if (typeof window !== "undefined") {
-      localStorage.setItem("sc-just-signed-up", "1");
-      localStorage.removeItem("sc-onboarding-completed");
+      localStorage.setItem("sc-role", role);
+      if (role === "STUDENT") {
+        localStorage.setItem("sc-just-signed-up", "1");
+        localStorage.removeItem("sc-onboarding-completed");
+      }
     }
     toast.success(t("auth.signup.success"));
-    setTimeout(() => navigate({ to: "/app" }), 600);
+    setTimeout(
+      () => navigate({ to: role === "ADMIN" ? "/admin" : "/app" }),
+      600,
+    );
   }
   return (
     <AuthLayout>
@@ -29,6 +37,38 @@ function SignupPage() {
           {t("auth.signup.login")}
         </Link>
       </p>
+
+      {/* Role selector */}
+      <div className="mb-5">
+        <div className="mb-2 text-[13px] font-semibold">Type de compte</div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setRole("STUDENT")}
+            className={
+              "flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-3 text-sm font-semibold transition-colors " +
+              (role === "STUDENT"
+                ? "border-brand bg-brand-light text-brand"
+                : "border-border bg-surface-2 text-foreground hover:bg-brand-light")
+            }
+          >
+            <GraduationCap size={18} /> Étudiant
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole("ADMIN")}
+            className={
+              "flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-3 text-sm font-semibold transition-colors " +
+              (role === "ADMIN"
+                ? "border-brand bg-brand-light text-brand"
+                : "border-border bg-surface-2 text-foreground hover:bg-brand-light")
+            }
+          >
+            <ShieldCheck size={18} /> Administrateur
+          </button>
+        </div>
+      </div>
+
       <GoogleButton>{t("auth.google")}</GoogleButton>
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
@@ -41,14 +81,6 @@ function SignupPage() {
           <AuthInput label={t("auth.lastname")} placeholder="Karimi" />
         </div>
         <AuthInput label={t("auth.email")} type="email" placeholder="vous@univ.ma" />
-        <div className="mb-4">
-          <label className="mb-1.5 block text-[13px] font-semibold">{t("auth.school")}</label>
-          <select className="w-full rounded-lg border-[1.5px] border-border bg-surface-2 px-4 py-3 text-sm outline-none transition-colors focus:border-brand">
-            <option>{t("auth.school.placeholder")}</option>
-            <option>ENSIAS</option><option>ENSA Rabat</option>
-            <option>FSR</option><option>FST</option><option>ENCG</option><option>Autre</option>
-          </select>
-        </div>
         <div className="grid grid-cols-2 gap-4">
           <AuthInput label={t("auth.password")} type="password" placeholder="8+" />
           <AuthInput label={t("auth.password.confirm")} type="password" placeholder="…" />

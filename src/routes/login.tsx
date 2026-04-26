@@ -13,7 +13,10 @@ function LoginPage() {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     toast.success(t("auth.login.success"));
-    setTimeout(() => navigate({ to: "/app" }), 600);
+    setTimeout(() => {
+      const role = typeof window !== "undefined" ? localStorage.getItem("sc-role") : null;
+      navigate({ to: role === "ADMIN" ? "/admin" : "/app" });
+    }, 600);
   }
   return (
     <AuthLayout>

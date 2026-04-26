@@ -1,8 +1,7 @@
 import { useI18n } from "@/contexts/AppProviders";
-import { toast } from "sonner";
 import type { SubPage } from "../AppShell";
 
-export function Overview({ go }: { go: (p: SubPage) => void }) {
+export function Overview({ go, onNewTask }: { go: (p: SubPage) => void; onNewTask?: () => void }) {
   const { t } = useI18n();
   return (
     <div>
@@ -14,7 +13,7 @@ export function Overview({ go }: { go: (p: SubPage) => void }) {
           </p>
         </div>
         <button
-          onClick={() => toast.success(t("toast.task.added"))}
+          onClick={() => onNewTask?.()}
           className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
         >
           {t("app.new.task")}

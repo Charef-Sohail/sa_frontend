@@ -1,12 +1,21 @@
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
 import { useTheme } from "@/contexts/AppProviders";
+import { Link } from "@tanstack/react-router";
 
-export function Logo({ size = 38, withText = true }: { size?: number; withText?: boolean }) {
+export function Logo({
+  size = 38,
+  withText = true,
+  asLink = false,
+}: {
+  size?: number;
+  withText?: boolean;
+  asLink?: boolean;
+}) {
   const { theme } = useTheme();
   const src = theme === "dark" ? logoDark : logoLight;
-  return (
-    <span className="inline-flex items-center gap-2.5">
+  const inner = (
+    <>
       <img
         src={src}
         alt="Smart Calendar SA"
@@ -20,6 +29,14 @@ export function Logo({ size = 38, withText = true }: { size?: number; withText?:
           Smart Calendar <span className="text-brand">SA</span>
         </span>
       )}
-    </span>
+    </>
   );
+  if (asLink) {
+    return (
+      <Link to="/" className="inline-flex items-center gap-2.5" aria-label="Accueil">
+        {inner}
+      </Link>
+    );
+  }
+  return <span className="inline-flex items-center gap-2.5">{inner}</span>;
 }
