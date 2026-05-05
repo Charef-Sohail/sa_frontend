@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
   LayoutGrid, CalendarDays, CheckSquare, ShoppingCart, MessageCircle,
-  LogOut, Bell, Search, Menu, X,
+  LogOut, Bell, Search, Menu, X, User, AlertTriangle,
 } from "lucide-react";
 import { useI18n } from "@/contexts/AppProviders";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
@@ -10,7 +10,7 @@ import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
 import { Logo } from "@/components/site/Logo";
 import { toast } from "sonner";
 
-export type SubPage = "overview" | "planning" | "tasks" | "markets" | "faq";
+export type SubPage = "overview" | "planning" | "tasks" | "markets" | "faq" | "profile" | "report";
 
 const MOODS: { key: string; emoji: string; tk: string }[] = [
   { key: "motivated", emoji: "🚀", tk: "app.mood.motivated" },
@@ -32,6 +32,8 @@ export function AppShell({
     { key: "tasks", label: t("app.nav.tasks"), Icon: CheckSquare, badge: "3" },
     { key: "markets", label: t("app.nav.markets"), Icon: ShoppingCart },
     { key: "faq", label: t("app.nav.faq"), Icon: MessageCircle },
+    { key: "profile", label: "Mon profil", Icon: User },
+    { key: "report", label: "Signaler un problème", Icon: AlertTriangle },
   ];
 
   function pickMood(m: typeof MOODS[number]) {

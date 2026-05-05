@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Users,
-  CheckSquare,
+  AlertTriangle,
   ShoppingCart,
   MessageCircle,
   Settings,
@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Logo } from "@/components/site/Logo";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { REPORTS_KEY, type Report as UserReport } from "@/components/app/pages/Report";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -35,16 +36,6 @@ type AdminUser = {
   createdAt: string;
 };
 
-type AdminTask = {
-  id: string;
-  studentEmail: string;
-  title: string;
-  category: string;
-  priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-  status: "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "CANCELLED";
-  deadline: string;
-};
-
 type AdminMarket = {
   id: string;
   name: string;
@@ -60,7 +51,6 @@ type AdminFaq = {
 };
 
 const USERS_KEY = "sc-admin-users";
-const TASKS_KEY = "sc-admin-tasks";
 const MARKETS_KEY = "sc-admin-markets";
 const FAQS_KEY = "sc-admin-faqs";
 
@@ -92,14 +82,6 @@ function seedUsers(): AdminUser[] {
     { id: crypto.randomUUID(), firstName: "Admin", lastName: "Root", email: "admin@smartcalendar.ma", role: "ADMIN", status: "ACTIVE", createdAt: now },
   ];
 }
-function seedTasks(): AdminTask[] {
-  const inDays = (d: number) => new Date(Date.now() + d * 86400000).toISOString();
-  return [
-    { id: crypto.randomUUID(), studentEmail: "ahmed@ensias.ma", title: "Examen BDD", category: "Examen", priority: "CRITICAL", status: "IN_PROGRESS", deadline: inDays(1) },
-    { id: crypto.randomUUID(), studentEmail: "sara@fsr.ma", title: "Projet React", category: "Projet", priority: "HIGH", status: "TODO", deadline: inDays(3) },
-    { id: crypto.randomUUID(), studentEmail: "ahmed@ensias.ma", title: "Lecture article ML", category: "Lecture", priority: "MEDIUM", status: "DONE", deadline: inDays(-2) },
-  ];
-}
 function seedMarkets(): AdminMarket[] {
   return [
     { id: crypto.randomUUID(), name: "Marjane", city: "Rabat", category: "Hypermarché", active: true },
@@ -115,8 +97,60 @@ function seedFaqs(): AdminFaq[] {
   ];
 }
 
+function seedReports(): UserReport[] {
+  const now = Date.now();
+  const mk = (mins: number) => new Date(now - mins * 60_000).toISOString();
+  return [
+    {
+      id: crypto.randomUUID(),
+      category: "BUG",
+      subject: "Impossible de cocher une tâche terminée",
+      description: "Quand je clique sur la case à cocher d'une tâche, rien ne se passe sur Chrome mobile.",
+      status: "OPEN",
+      createdAt: mk(30),
+      userEmail: "ahmed@enset.ma",
+    },
+    {
+      id: crypto.randomUUID(),
+      category: "FEATURE",
+      subject: "Ajouter un mode hors-ligne",
+      description: "Ce serait super de pouvoir consulter mes tâches sans connexion internet dans le bus.",
+      status: "IN_PROGRESS",
+      createdAt: mk(60 * 5),
+      userEmail: "sara@fsr.ma",
+    },
+    {
+      id: crypto.randomUUID(),
+      category: "ACCOUNT",
+      subject: "Email de confirmation non reçu",
+      description: "Je n'ai pas reçu l'email de confirmation après l'inscription, même dans les spams.",
+      status: "OPEN",
+      createdAt: mk(60 * 12),
+      userEmail: "karim@ensa.ma",
+    },
+    {
+      id: crypto.randomUUID(),
+      category: "BUG",
+      subject: "Importation .ics échoue",
+      description: "L'import du fichier ICS de mon emploi du temps ENSET retourne une erreur 'format invalide'.",
+      status: "RESOLVED",
+      createdAt: mk(60 * 24 * 2),
+      userEmail: "youssef@ensiat.ma",
+    },
+    {
+      id: crypto.randomUUID(),
+      category: "OTHER",
+      subject: "Traduction manquante en arabe",
+      description: "Plusieurs labels du dashboard ne sont pas traduits en arabe.",
+      status: "OPEN",
+      createdAt: mk(60 * 24 * 3),
+      userEmail: "fatima@encg.ma",
+    },
+  ];
+}
+
 /* ---------------- Page principale ---------------- */
-type Section = "dashboard" | "users" | "tasks" | "markets" | "faqs" | "settings";
+type Section = "dashboard" | "users" | "reports" | "markets" | "faqs" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -141,7 +175,7 @@ function AdminPage() {
   const items: { key: Section; label: string; Icon: React.ComponentType<{ size?: number }> }[] = [
     { key: "dashboard", label: "Tableau de bord", Icon: LayoutDashboard },
     { key: "users", label: "Utilisateurs", Icon: Users },
-    { key: "tasks", label: "Tâches", Icon: CheckSquare },
+    { key: "reports", label: "Signalements", Icon: AlertTriangle },
     { key: "markets", label: "Marchés", Icon: ShoppingCart },
     { key: "faqs", label: "FAQ", Icon: MessageCircle },
     { key: "settings", label: "Paramètres", Icon: Settings },
@@ -222,7 +256,7 @@ function AdminPage() {
 
           {section === "dashboard" && <Dashboard onGo={setSection} />}
           {section === "users" && <UsersPanel />}
-          {section === "tasks" && <TasksPanel />}
+          {section === "reports" && <ReportsPanel />}
           {section === "markets" && <MarketsPanel />}
           {section === "faqs" && <FaqsPanel />}
           {section === "settings" && <SettingsPanel />}
@@ -235,9 +269,9 @@ function AdminPage() {
 /* ---------------- Dashboard ---------------- */
 function Dashboard({ onGo }: { onGo: (s: Section) => void }) {
   const users = loadOrSeed<AdminUser>(USERS_KEY, seedUsers);
-  const tasks = loadOrSeed<AdminTask>(TASKS_KEY, seedTasks);
   const markets = loadOrSeed<AdminMarket>(MARKETS_KEY, seedMarkets);
   const faqs = loadOrSeed<AdminFaq>(FAQS_KEY, seedFaqs);
+  const reports: UserReport[] = loadOrSeed<UserReport>(REPORTS_KEY, seedReports);
 
   return (
     <div>
@@ -246,9 +280,9 @@ function Dashboard({ onGo }: { onGo: (s: Section) => void }) {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Utilisateurs" value={users.length} sub={`${users.filter((u) => u.status === "ACTIVE").length} actifs`} color="var(--brand)" onClick={() => onGo("users")} />
-        <Kpi label="Tâches" value={tasks.length} sub={`${tasks.filter((t) => t.status === "DONE").length} terminées`} color="var(--success)" onClick={() => onGo("tasks")} />
+        <Kpi label="Signalements" value={reports.length} sub={`${reports.filter((r) => r.status === "OPEN").length} ouverts`} color="var(--danger)" onClick={() => onGo("reports")} />
         <Kpi label="Marchés" value={markets.length} sub={`${markets.filter((m) => m.active).length} actifs`} color="var(--warning)" onClick={() => onGo("markets")} />
-        <Kpi label="FAQ" value={faqs.length} sub="entrées" color="var(--danger)" onClick={() => onGo("faqs")} />
+        <Kpi label="FAQ" value={faqs.length} sub="entrées" color="var(--success)" onClick={() => onGo("faqs")} />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -268,17 +302,20 @@ function Dashboard({ onGo }: { onGo: (s: Section) => void }) {
             ))}
           </ul>
         </Card>
-        <Card title="Dernières tâches">
+        <Card title="Derniers signalements">
           <ul className="flex flex-col gap-2">
-            {tasks.slice(0, 5).map((t) => (
-              <li key={t.id} className="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-2">
+            {reports.slice(0, 5).map((r) => (
+              <li key={r.id} className="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-2">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-semibold">{t.title}</div>
-                  <div className="text-[11px] text-muted-foreground">{t.studentEmail}</div>
+                  <div className="truncate text-[13px] font-semibold">{r.subject}</div>
+                  <div className="text-[11px] text-muted-foreground">{r.userEmail}</div>
                 </div>
-                <PriorityPill p={t.priority} />
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{
+                  background: "color-mix(in oklab, var(--warning) 15%, transparent)", color: "var(--warning)",
+                }}>{r.category}</span>
               </li>
             ))}
+            {reports.length === 0 && <li className="text-xs text-muted-foreground">Aucun signalement.</li>}
           </ul>
         </Card>
       </div>
@@ -320,20 +357,6 @@ function RolePill({ role }: { role: Role }) {
   );
 }
 
-function PriorityPill({ p }: { p: AdminTask["priority"] }) {
-  const map: Record<AdminTask["priority"], { c: string; l: string }> = {
-    CRITICAL: { c: "var(--danger)", l: "Critique" },
-    HIGH: { c: "var(--warning)", l: "Haute" },
-    MEDIUM: { c: "var(--brand)", l: "Moyenne" },
-    LOW: { c: "var(--success)", l: "Basse" },
-  };
-  const m = map[p];
-  return (
-    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: `color-mix(in oklab, ${m.c} 15%, transparent)`, color: m.c }}>
-      {m.l}
-    </span>
-  );
-}
 
 /* ---------------- Users ---------------- */
 function UsersPanel() {
@@ -482,51 +505,60 @@ function UserDialog({ open, initial, onClose, onSubmit }: {
   );
 }
 
-/* ---------------- Tasks ---------------- */
-function TasksPanel() {
-  const [tasks, setTasks] = React.useState<AdminTask[]>([]);
+/* ---------------- Reports (signalements) ---------------- */
+function ReportsPanel() {
+  const [list, setList] = React.useState<UserReport[]>([]);
   const [q, setQ] = React.useState("");
-  React.useEffect(() => setTasks(loadOrSeed(TASKS_KEY, seedTasks)), []);
+
+  React.useEffect(() => {
+    setList(loadOrSeed<UserReport>(REPORTS_KEY, seedReports));
+  }, []);
+
+  function persist(next: UserReport[]) { setList(next); localStorage.setItem(REPORTS_KEY, JSON.stringify(next)); }
   function remove(id: string) {
-    if (!confirm("Supprimer cette tâche ?")) return;
-    const next = tasks.filter((t) => t.id !== id);
-    setTasks(next); save(TASKS_KEY, next);
-    toast.success("Tâche supprimée");
+    if (!confirm("Supprimer ce signalement ?")) return;
+    persist(list.filter((r) => r.id !== id));
+    toast.success("Signalement supprimé");
   }
-  function setStatus(id: string, status: AdminTask["status"]) {
-    const next = tasks.map((t) => t.id === id ? { ...t, status } : t);
-    setTasks(next); save(TASKS_KEY, next);
+  function setStatus(id: string, status: UserReport["status"]) {
+    persist(list.map((r) => r.id === id ? { ...r, status } : r));
   }
-  const filtered = tasks.filter((t) => (t.title + " " + t.studentEmail).toLowerCase().includes(q.toLowerCase()));
+
+  const filtered = list.filter((r) => (r.subject + " " + r.userEmail + " " + r.description).toLowerCase().includes(q.toLowerCase()));
 
   return (
     <div>
-      <PanelHeader title="Tâches" emoji="✅" />
-      <SearchBar value={q} onChange={setQ} placeholder="Rechercher une tâche..." />
+      <PanelHeader title="Signalements" emoji="🚨" />
+      <SearchBar value={q} onChange={setQ} placeholder="Rechercher un signalement..." />
       <div className="overflow-x-auto rounded-2xl bg-surface-2 shadow-[0_4px_24px_rgba(79,110,247,.08)]">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
             <tr className="border-b border-border">
-              <Th>Titre</Th><Th>Étudiant</Th><Th>Catégorie</Th><Th>Priorité</Th><Th>Statut</Th><Th>Actions</Th>
+              <Th>Sujet</Th><Th>Utilisateur</Th><Th>Catégorie</Th><Th>Date</Th><Th>Statut</Th><Th>Actions</Th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((t) => (
-              <tr key={t.id} className="border-b border-border last:border-0">
-                <Td><span className="font-semibold">{t.title}</span><div className="text-[11px] text-muted-foreground">Échéance : {new Date(t.deadline).toLocaleDateString()}</div></Td>
-                <Td><span className="text-muted-foreground">{t.studentEmail}</span></Td>
-                <Td>{t.category}</Td>
-                <Td><PriorityPill p={t.priority} /></Td>
+            {filtered.map((r) => (
+              <tr key={r.id} className="border-b border-border last:border-0 align-top">
                 <Td>
-                  <select value={t.status} onChange={(e) => setStatus(t.id, e.target.value as AdminTask["status"])} className="rounded-md border border-border bg-surface px-2 py-1 text-[11px]">
-                    <option>TODO</option><option>IN_PROGRESS</option><option>REVIEW</option><option>DONE</option><option>CANCELLED</option>
+                  <div className="font-semibold">{r.subject}</div>
+                  <div className="mt-1 max-w-md text-[11px] text-muted-foreground line-clamp-2">{r.description}</div>
+                </Td>
+                <Td><span className="text-muted-foreground">{r.userEmail}</span></Td>
+                <Td>{r.category}</Td>
+                <Td><span className="text-[11px] text-muted-foreground">{new Date(r.createdAt).toLocaleString()}</span></Td>
+                <Td>
+                  <select value={r.status} onChange={(e) => setStatus(r.id, e.target.value as UserReport["status"])} className="rounded-md border border-border bg-surface px-2 py-1 text-[11px]">
+                    <option value="OPEN">Ouvert</option>
+                    <option value="IN_PROGRESS">En cours</option>
+                    <option value="RESOLVED">Résolu</option>
                   </select>
                 </Td>
-                <Td><IconBtn danger onClick={() => remove(t.id)} label="Supprimer"><Trash2 size={14} /></IconBtn></Td>
+                <Td><IconBtn danger onClick={() => remove(r.id)} label="Supprimer"><Trash2 size={14} /></IconBtn></Td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><Td colSpan={6}><div className="py-6 text-center text-sm text-muted-foreground">Aucune tâche</div></Td></tr>
+              <tr><Td colSpan={6}><div className="py-6 text-center text-sm text-muted-foreground">Aucun signalement</div></Td></tr>
             )}
           </tbody>
         </table>
@@ -682,7 +714,7 @@ function SettingsPanel() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {[
           { k: USERS_KEY, l: "Utilisateurs" },
-          { k: TASKS_KEY, l: "Tâches" },
+          { k: REPORTS_KEY, l: "Signalements" },
           { k: MARKETS_KEY, l: "Marchés" },
           { k: FAQS_KEY, l: "FAQ" },
         ].map((x) => (

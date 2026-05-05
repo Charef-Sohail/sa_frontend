@@ -97,7 +97,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "footer.product": "Produit",
     "footer.company": "Entreprise",
     "footer.support": "Support",
-    "footer.copy": "© 2025 Smart Calendar SA. Tous droits réservés.",
+    "footer.copy": "© 2026 Smart Calendar SA. Tous droits réservés.",
 
     "auth.back": "Retour à l'accueil",
     "auth.left.title.1": "Organisez votre",
@@ -309,7 +309,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "footer.product": "Product",
     "footer.company": "Company",
     "footer.support": "Support",
-    "footer.copy": "© 2025 Smart Calendar SA. All rights reserved.",
+    "footer.copy": "© 2026 Smart Calendar SA. All rights reserved.",
 
     "auth.back": "Back to home",
     "auth.left.title.1": "Organize your",
@@ -518,7 +518,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     "footer.product": "المنتج",
     "footer.company": "الشركة",
     "footer.support": "الدعم",
-    "footer.copy": "© 2025 Smart Calendar SA. جميع الحقوق محفوظة.",
+    "footer.copy": "© 2026 Smart Calendar SA. جميع الحقوق محفوظة.",
 
     "auth.back": "العودة إلى الرئيسية",
     "auth.left.title.1": "نظّم",

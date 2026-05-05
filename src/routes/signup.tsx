@@ -13,10 +13,34 @@ function SignupPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [role, setRole] = React.useState<"STUDENT" | "ADMIN">("STUDENT");
+  const [school, setSchool] = React.useState("ENSET");
+  const [birthDate, setBirthDate] = React.useState("");
+  const maxBirthDate = new Date().toISOString().slice(0, 10);
+
+  function getAgeFromBirthDate(date: string) {
+    const birth = new Date(date);
+    const now = new Date();
+    let age = now.getFullYear() - birth.getFullYear();
+    const monthDiff = now.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
+      age--;
+    }
+    return String(Math.max(age, 0));
+  }
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (typeof window !== "undefined") {
       localStorage.setItem("sc-role", role);
+      try {
+        const raw = localStorage.getItem("sc-profile");
+        const prev = raw ? JSON.parse(raw) : {};
+        const age = birthDate ? getAgeFromBirthDate(birthDate) : prev.age ?? "";
+        localStorage.setItem(
+          "sc-profile",
+          JSON.stringify({ ...prev, school, birthDate, age }),
+        );
+      } catch {}
       if (role === "STUDENT") {
         localStorage.setItem("sc-just-signed-up", "1");
         localStorage.removeItem("sc-onboarding-completed");
@@ -81,6 +105,29 @@ function SignupPage() {
           <AuthInput label={t("auth.lastname")} placeholder="Karimi" />
         </div>
         <AuthInput label={t("auth.email")} type="email" placeholder="vous@univ.ma" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="mb-4">
+            <label className="mb-1.5 block text-[13px] font-semibold">Établissement</label>
+            <input
+              type="text"
+              value={school}
+              onChange={(e) => setSchool(e.target.value)}
+              placeholder="Ex: ENSET Mohammedia"
+              className="w-full rounded-lg border-[1.5px] border-border bg-surface-2 px-4 py-3 text-sm outline-none focus:border-brand"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="mb-1.5 block text-[13px] font-semibold">Date de naissance</label>
+            <input
+              type="date"
+              min="1950-01-01"
+              max={maxBirthDate}
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              className="w-full rounded-lg border-[1.5px] border-border bg-surface-2 px-4 py-3 text-sm outline-none focus:border-brand"
+            />
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <AuthInput label={t("auth.password")} type="password" placeholder="8+" />
           <AuthInput label={t("auth.password.confirm")} type="password" placeholder="…" />

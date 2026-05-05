@@ -7,6 +7,8 @@ import { Tasks } from "@/components/app/pages/Tasks";
 import { Markets } from "@/components/app/pages/Markets";
 import { Faq } from "@/components/app/pages/Faq";
 import { Survey } from "@/components/app/Survey";
+import { Profile } from "@/components/app/pages/Profile";
+import { ReportPage } from "@/components/app/pages/Report";
 
 export const Route = createFileRoute("/app")({
   component: AppPage,
@@ -38,6 +40,8 @@ function AppPage() {
         )}
         {page === "markets" && <Markets />}
         {page === "faq" && <Faq />}
+        {page === "profile" && <Profile />}
+        {page === "report" && <ReportPage />}
       </AppShell>
       {showSurvey && <Survey onComplete={() => setShowSurvey(false)} />}
     </>

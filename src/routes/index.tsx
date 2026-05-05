@@ -194,7 +194,7 @@ function LogosBar() {
       <div className="mx-auto w-full max-w-[1160px] px-6">
         <div className="mb-5 text-center text-[13px] font-medium text-muted-foreground">{t("logos.title")}</div>
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3 opacity-60">
-          {["ENSIAS", "ENSA", "FSR", "ENCG", "FST"].map((n) => (
+          {["ENSET", "ENSIAS", "ENSA", "FSR", "ENCG", "FST"].map((n) => (
             <span key={n} className="font-display text-base font-extrabold text-foreground">{n}</span>
           ))}
         </div>

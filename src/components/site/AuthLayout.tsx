@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { Logo } from "./Logo";
+import logoLight from "@/assets/logo-light.png";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useI18n } from "@/contexts/AppProviders";
@@ -22,7 +22,12 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
           }}
         />
         <div className="relative">
-          <Logo />
+          <span className="inline-flex items-center gap-2.5">
+            <img src={logoLight} alt="Smart Calendar SA" width={38} height={38} className="rounded-[10px] object-cover" style={{ width: 38, height: 38 }} />
+            <span className="font-display text-[19px] font-extrabold text-white">
+              Smart Calendar <span style={{ color: "#7B93FF" }}>SA</span>
+            </span>
+          </span>
           <h2 className="mt-12 font-display text-[clamp(28px,3vw,40px)] font-extrabold leading-tight text-white">
             {t("auth.left.title.1")}
             <br />
@@ -44,7 +49,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
             ))}
           </ul>
         </div>
-        <div className="relative text-xs text-white/40">© 2025 Smart Calendar SA</div>
+        <div className="relative text-xs text-white/40">© 2026 Smart Calendar SA</div>
       </div>
 
       {/* Right side */}

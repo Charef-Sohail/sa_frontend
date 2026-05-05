@@ -1,9 +1,42 @@
-import { Upload, Sparkles } from "lucide-react";
+import * as React from "react";
+import { Upload, Sparkles, Check } from "lucide-react";
 import { useI18n } from "@/contexts/AppProviders";
 import { toast } from "sonner";
 
 export function Planning() {
   const { t } = useI18n();
+  const fileRef = React.useRef<HTMLInputElement>(null);
+  const [imported, setImported] = React.useState<{ name: string; count: number; events: { summary: string; start: string }[] } | null>(null);
+
+  function parseICS(text: string) {
+    const events: { summary: string; start: string }[] = [];
+    const blocks = text.split(/BEGIN:VEVENT/).slice(1);
+    for (const b of blocks) {
+      const end = b.indexOf("END:VEVENT");
+      const body = end >= 0 ? b.slice(0, end) : b;
+      const sm = body.match(/SUMMARY[^:]*:([^\r\n]+)/);
+      const dt = body.match(/DTSTART[^:]*:([^\r\n]+)/);
+      events.push({ summary: sm?.[1]?.trim() ?? "(sans titre)", start: dt?.[1]?.trim() ?? "" });
+    }
+    return events;
+  }
+
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!/\.ics$/i.test(f.name)) {
+      toast.error("Veuillez sélectionner un fichier .ics");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const events = parseICS(String(reader.result || ""));
+      setImported({ name: f.name, count: events.length, events: events.slice(0, 10) });
+      toast.success(`${events.length} événement(s) importé(s) depuis ${f.name}`);
+    };
+    reader.readAsText(f);
+  }
+
   const slots = [
     { time: "08:00", title: "Révision Algorithmique", sub: "2h · Moyen", tone: "neutral" },
     { time: "10:00", title: "✅ Rapport TP", sub: "Terminée", tone: "success" },
@@ -69,12 +102,29 @@ export function Planning() {
           <div className="rounded-2xl bg-surface-2 p-5 shadow-[0_4px_24px_rgba(79,110,247,.08)]">
             <div className="mb-3 text-sm font-bold">{t("planning.import")}</div>
             <button
-              onClick={() => toast.success(t("toast.ics"))}
+              type="button"
+              onClick={() => fileRef.current?.click()}
               className="flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-border bg-surface px-4 py-5 transition-colors hover:border-brand"
             >
               <Upload size={24} className="text-brand" />
-              <span className="text-xs font-semibold text-brand">{t("planning.import")}</span>
+              <span className="text-xs font-semibold text-brand">Importer .ics</span>
+              <span className="text-[11px] text-muted-foreground">Glissez ou cliquez pour parcourir</span>
             </button>
+            <input ref={fileRef} type="file" accept=".ics,text/calendar" className="hidden" onChange={onPickFile} />
+            {imported && (
+              <div className="mt-3 rounded-lg bg-success/10 p-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-success">
+                  <Check size={14} /> {imported.count} événement(s) — {imported.name}
+                </div>
+                {imported.events.length > 0 && (
+                  <ul className="mt-2 max-h-40 space-y-1 overflow-auto text-[11px] text-muted-foreground">
+                    {imported.events.map((ev, i) => (
+                      <li key={i} className="truncate">• <span className="text-foreground">{ev.summary}</span> {ev.start && <span className="opacity-70">— {ev.start}</span>}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
           <div className="rounded-2xl bg-surface-2 p-5 shadow-[0_4px_24px_rgba(79,110,247,.08)]">
             <div className="mb-3 text-sm font-bold">{t("planning.week")}</div>
